@@ -55,7 +55,7 @@ LANGSEARCH_API_KEY=...        # https://langsearch.com
 openssl req -x509 -newkey rsa:2048 -keyout cert.key -out cert.pem \
   -days 365 -nodes \
   -subj "//CN=192.168.x.x" \
-  -addext "subjectAltName=IP:192.168.1.8,IP:127.0.0.1,DNS:localhost"
+  -addext "subjectAltName=IP:192.168.x.x,IP:127.0.0.1,DNS:localhost"
 ```
 
 服务器启动时检测到 `cert.key` + `cert.pem` 自动启用 HTTPS。
