@@ -975,9 +975,38 @@ function formatTime(isoStr) {
 }
 
 // ═══════════════════════════════════════════════════════════
+// Theme (dark / light) — persisted in localStorage
+// ═══════════════════════════════════════════════════════════
+const THEME_KEY = 'ozxf-theme';
+
+function applyTheme(theme) {
+    document.documentElement.setAttribute('data-theme', theme);
+    const label = document.querySelector('.theme-toggle-label');
+    if (label) label.textContent = theme === 'light' ? '深色模式' : '浅色模式';
+}
+
+function currentTheme() {
+    return document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark';
+}
+
+function toggleTheme() {
+    const next = currentTheme() === 'light' ? 'dark' : 'light';
+    applyTheme(next);
+    try { localStorage.setItem(THEME_KEY, next); } catch (_) {}
+}
+
+// ═══════════════════════════════════════════════════════════
 // Init
 // ═══════════════════════════════════════════════════════════
 function init() {
+    // Restore saved theme (default dark)
+    let saved = 'dark';
+    try { saved = localStorage.getItem(THEME_KEY) || 'dark'; } catch (_) {}
+    applyTheme(saved);
+
+    const btnThemeToggle = document.getElementById('btnThemeToggle');
+    if (btnThemeToggle) btnThemeToggle.addEventListener('click', toggleTheme);
+
     connectWS();
     messageInput.focus();
     window.addEventListener('beforeunload', () => {
