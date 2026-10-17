@@ -61,6 +61,9 @@
           <span class="note-line"></span>
         </div>
         <div class="sidebar-footer">
+          <button id="btnApiSettings" class="footer-button">
+            <span data-icon="settings"></span>API 设置
+          </button>
           <button id="btnHelp" class="footer-button"><span data-icon="help"></span>使用指南</button
           ><button
             id="btnThemeToggle"
@@ -107,6 +110,7 @@
         </header>
         <div class="service-notice" id="serviceNotice" hidden>
           <span data-icon="help"></span><span id="serviceNoticeText"></span
+          ><button id="btnConfigureApi" class="notice-configure">配置 API</button
           ><button id="btnRefreshHealth" class="notice-refresh" title="重新检查服务">
             <span data-icon="refresh"></span><span>重新检查</span>
           </button>
@@ -271,6 +275,202 @@
         </button>
       </div>
       <p class="call-note">录音结束后识别文字，再为你生成语音回复</p>
+    </dialog>
+    <dialog id="apiSettingsDialog" class="settings-dialog" aria-labelledby="apiSettingsTitle">
+      <form id="apiSettingsForm" autocomplete="off">
+        <div class="settings-header">
+          <div>
+            <span class="settings-eyebrow">CONNECT YOUR SERVICES</span>
+            <h2 id="apiSettingsTitle">API 服务配置</h2>
+            <p>连接你的模型、语音与搜索服务，保存后立即生效。</p>
+          </div>
+          <button
+            id="btnApiSettingsClose"
+            class="icon-button"
+            type="button"
+            aria-label="关闭 API 配置"
+          >
+            <span data-icon="close"></span>
+          </button>
+        </div>
+        <div class="settings-body">
+          <p id="apiSettingsMessage" class="settings-message" role="status" aria-live="polite">
+            正在读取配置…
+          </p>
+          <fieldset id="apiSettingsFields" disabled>
+            <section class="settings-service" data-service="chat">
+              <div class="settings-service-heading">
+                <div>
+                  <h3>DeepSeek <span>文字模型</span></h3>
+                  <p>也支持 OpenAI 兼容接口。</p>
+                </div>
+                <span id="chatConfigured" class="settings-badge">未配置</span>
+              </div>
+              <label class="settings-field" for="deepseekApiKey">API Key</label>
+              <div class="settings-secret">
+                <input
+                  id="deepseekApiKey"
+                  name="deepseek_api_key"
+                  type="password"
+                  maxlength="512"
+                  placeholder="输入 API Key"
+                  autocomplete="new-password"
+                  spellcheck="false"
+                /><button
+                  type="button"
+                  data-reveal="deepseekApiKey"
+                  aria-label="显示新输入的模型密钥"
+                  aria-pressed="false"
+                >
+                  显示
+                </button>
+              </div>
+              <label class="settings-clear" hidden
+                ><input type="checkbox" data-clear="deepseek_api_key" />清除已保存的模型密钥</label
+              >
+              <div class="settings-columns">
+                <div>
+                  <label class="settings-field" for="deepseekBaseUrl">API 地址</label
+                  ><input
+                    id="deepseekBaseUrl"
+                    name="deepseek_base_url"
+                    type="url"
+                    required
+                    maxlength="2048"
+                    placeholder="https://api.deepseek.com"
+                    spellcheck="false"
+                  />
+                </div>
+                <div>
+                  <label class="settings-field" for="deepseekModel">模型名称</label
+                  ><input
+                    id="deepseekModel"
+                    name="deepseek_model"
+                    required
+                    maxlength="128"
+                    placeholder="deepseek-v4-pro"
+                    spellcheck="false"
+                  />
+                </div>
+              </div>
+              <div class="settings-test-row">
+                <button type="button" class="settings-test" data-test-service="chat">
+                  <span data-icon="refresh"></span>测试模型连接</button
+                ><span class="settings-test-result" data-test-result="chat" role="status"></span>
+              </div>
+            </section>
+            <section class="settings-service" data-service="voice">
+              <div class="settings-service-heading">
+                <div>
+                  <h3>Fish Audio <span>语音回复与识别</span></h3>
+                  <p>语音服务可以单独启用。</p>
+                </div>
+                <span id="voiceConfigured" class="settings-badge">未配置</span>
+              </div>
+              <label class="settings-field" for="fishAudioApiKey">API Key</label>
+              <div class="settings-secret">
+                <input
+                  id="fishAudioApiKey"
+                  name="fish_audio_api_key"
+                  type="password"
+                  maxlength="512"
+                  placeholder="输入 API Key"
+                  autocomplete="new-password"
+                  spellcheck="false"
+                /><button
+                  type="button"
+                  data-reveal="fishAudioApiKey"
+                  aria-label="显示新输入的语音密钥"
+                  aria-pressed="false"
+                >
+                  显示
+                </button>
+              </div>
+              <label class="settings-clear" hidden
+                ><input
+                  type="checkbox"
+                  data-clear="fish_audio_api_key"
+                />清除已保存的语音密钥</label
+              >
+              <div class="settings-columns">
+                <div>
+                  <label class="settings-field" for="fishAudioVoiceId">音色 ID</label
+                  ><input
+                    id="fishAudioVoiceId"
+                    name="fish_audio_voice_id"
+                    maxlength="128"
+                    placeholder="Fish Audio Reference ID"
+                    spellcheck="false"
+                  />
+                </div>
+                <div>
+                  <label class="settings-field" for="fishAudioLatency">语音延迟</label
+                  ><select id="fishAudioLatency" name="fish_audio_latency">
+                    <option value="balanced">均衡</option>
+                    <option value="normal">优先音质</option>
+                    <option value="low">优先速度</option>
+                  </select>
+                </div>
+              </div>
+              <div class="settings-test-row">
+                <button type="button" class="settings-test" data-test-service="voice">
+                  <span data-icon="refresh"></span>测试语音连接</button
+                ><span class="settings-test-result" data-test-result="voice" role="status"></span>
+              </div>
+              <p class="settings-field-note">语音测试会生成“你好”短句，使用服务账户额度。</p>
+            </section>
+            <section class="settings-service" data-service="search">
+              <div class="settings-service-heading">
+                <div>
+                  <h3>LangSearch <span>联网搜索</span></h3>
+                  <p>获取实时资料并为回答标注来源。</p>
+                </div>
+                <span id="searchConfigured" class="settings-badge">未配置</span>
+              </div>
+              <label class="settings-field" for="langsearchApiKey">API Key</label>
+              <div class="settings-secret">
+                <input
+                  id="langsearchApiKey"
+                  name="langsearch_api_key"
+                  type="password"
+                  maxlength="512"
+                  placeholder="输入 API Key"
+                  autocomplete="new-password"
+                  spellcheck="false"
+                /><button
+                  type="button"
+                  data-reveal="langsearchApiKey"
+                  aria-label="显示新输入的搜索密钥"
+                  aria-pressed="false"
+                >
+                  显示
+                </button>
+              </div>
+              <label class="settings-clear" hidden
+                ><input
+                  type="checkbox"
+                  data-clear="langsearch_api_key"
+                />清除已保存的搜索密钥</label
+              >
+              <div class="settings-test-row">
+                <button type="button" class="settings-test" data-test-service="search">
+                  <span data-icon="refresh"></span>测试搜索连接</button
+                ><span class="settings-test-result" data-test-result="search" role="status"></span>
+              </div>
+              <p class="settings-field-note">搜索测试会请求一次搜索，使用服务账户额度。</p>
+            </section>
+          </fieldset>
+          <p class="settings-storage-note">
+            已有密钥不会回显，留空表示保留。密钥仅保存到服务端本地，不写入浏览器存储。
+          </p>
+        </div>
+        <div class="settings-footer">
+          <button type="button" id="btnApiSettingsCancel">取消</button
+          ><button type="submit" id="btnApiSettingsSave" class="settings-save" disabled>
+            保存并应用
+          </button>
+        </div>
+      </form>
     </dialog>
     <dialog id="helpDialog" class="help-dialog" aria-labelledby="helpTitle">
       <div class="dialog-top">

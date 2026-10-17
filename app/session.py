@@ -210,7 +210,7 @@ class ChatSession:
         await self.cancel()
         request_id = request_id or uuid.uuid4().hex
         if not self.services.readiness["chat"]:
-            await self.error("文字服务尚未配置，请在 .env 中设置 DEEPSEEK_API_KEY 并重启服务。",
+            await self.error("文字服务尚未配置，请在侧栏“API 设置”中填写模型密钥（DEEPSEEK_API_KEY）。",
                              code="chat_unavailable", request_id=request_id)
             await self.send({"type": "status", "status": "done"}, request_id=request_id)
             return

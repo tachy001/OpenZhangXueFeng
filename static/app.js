@@ -2,6 +2,7 @@ import { hydrateIcons } from './icons.js';
 import { ChatSocket, request } from './transport.js';
 import { AudioPlayer, WaveRecorder } from './audio.js';
 import { dom, ConversationView, renderConversations, toast } from './renderer.js';
+import { initApiSettings } from './settings.js';
 
 /** One controller owns conversation, request and microphone lifecycles. */
 const state = {
@@ -141,7 +142,7 @@ async function refreshHealth(showFeedback = false) {
     state.health = data;
     const services = data.services || {};
     const missing = [];
-    if (services.chat === false) missing.push('咨询服务尚未配置，请管理员设置模型服务后重启应用。');
+    if (services.chat === false) missing.push('咨询服务尚未配置，点击“配置 API”连接你的模型服务。');
     else if (services.voice === false)
       missing.push('文字咨询已就绪，配置语音服务后可开启语音回复与通话。');
     else if (services.search === false)
@@ -155,8 +156,9 @@ async function refreshHealth(showFeedback = false) {
         : '语音：可用',
       services.search === false ? '联网检索：待配置（LANGSEARCH_API_KEY）' : '联网检索：可用',
     ];
-    dom.helpService.textContent = `${details.join('；')}。修改服务器 .env 后重启服务，再点击“重新检查”。`;
+    dom.helpService.textContent = `${details.join('；')}。可在侧栏“API 设置”中配置，保存后立即生效。`;
     if (!voiceAvailable()) state.voice = false;
+    if (!voiceAvailable() || !chatAvailable()) closeCall();
     if (Number.isInteger(data.limits?.message_chars) && data.limits.message_chars > 0)
       dom.messageInput.maxLength = data.limits.message_chars;
     if (showFeedback)
@@ -321,6 +323,10 @@ function matchesTurn(message) {
 
 function handleMessage(message) {
   if (!message || typeof message.type !== 'string' || state.disposed) return;
+  if (message.type === 'config_updated') {
+    refreshHealth();
+    return;
+  }
   if (message.type === 'conv_list') {
     ++listSequence;
     state.conversations = Array.isArray(message.conversations) ? message.conversations : [];
@@ -665,6 +671,7 @@ window.addEventListener('pagehide', () => {
   socket.close();
   player.dispose();
 });
+initApiSettings({ onSaved: () => refreshHealth(), closeSidebar: () => setSidebar(false) });
 setSidebar(false);
 renderSidebar();
 updateUI();

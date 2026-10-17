@@ -15,6 +15,8 @@ class ProviderServices:
     transcribe: Callable | None = None
 
     def __post_init__(self):
+        self._overrides = {name: getattr(self, name) for name in ("chat_stream", "search", "tts", "transcribe")
+                           if getattr(self, name) is not None}
         if self.chat_stream is None:
             from deepseek_client import chat_stream_agent
 
@@ -46,3 +48,7 @@ class ProviderServices:
     @property
     def readiness(self) -> dict[str, bool]:
         return self.settings.services
+
+    def reconfigure(self, settings: Settings):
+        """New provider closures use new credentials; existing in-flight calls keep their snapshot."""
+        return ProviderServices(settings, **self._overrides)

@@ -99,7 +99,7 @@ async def rename_conversation(request: Request, conv_id: str, update: Conversati
 async def transcribe(request: Request, audio: UploadFile = File(...)):
     try:
         if not request.app.state.services.readiness["voice"]:
-            raise HTTPException(503, "语音服务尚未配置，请设置 FISH_AUDIO_API_KEY 并重启服务。")
+            raise HTTPException(503, "语音服务尚未配置，请在“API 设置”中填写 Fish Audio 密钥。")
         content_type = (audio.content_type or "").split(";", 1)[0].lower()
         if content_type and not (content_type.startswith("audio/") or content_type in {
             "application/octet-stream", "video/webm", "video/mp4"}):

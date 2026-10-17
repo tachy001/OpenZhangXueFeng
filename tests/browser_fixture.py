@@ -9,6 +9,7 @@ import tempfile
 from pathlib import Path
 
 from app import create_app
+from app import api_settings
 from app.services import ProviderServices
 from config import Settings
 from storage import ConversationStore
@@ -43,6 +44,15 @@ async def tts(text):
 
 async def transcribe(audio):
     return {"text": "请帮我规划职业方向", "duration": 1.0}
+
+
+async def test_connection(service, settings):
+    """Explicit fake, so browser interaction tests never call paid providers."""
+    if not settings.services[service]:
+        raise api_settings.ProbeError("请先填写此服务的 API Key。")
+
+
+api_settings.probe_service = test_connection
 
 
 app = create_app(settings, ConversationStore(settings.data_dir),

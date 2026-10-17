@@ -21,6 +21,8 @@ cert.pem
 
 # Data
 data/
+api_settings.json
+.api-settings-*.tmp
 
 # IDE
 .vscode/

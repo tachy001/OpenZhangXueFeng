@@ -237,6 +237,64 @@ try {
   assert.equal(await phone.locator('#btnMenu').getAttribute('aria-expanded'), 'false');
   passed('mobile layout and dismissible navigation');
 
+  await page.locator('#btnApiSettings').click();
+  await page.locator('#apiSettingsFields').waitFor({ state: 'visible' });
+  await page.waitForFunction(() => !document.getElementById('apiSettingsFields').disabled);
+  assert.equal(await page.locator('#deepseekApiKey').inputValue(), '');
+  assert.ok((await page.locator('#deepseekApiKey').getAttribute('placeholder')).includes('已配置'));
+  await page.locator('#deepseekApiKey').fill('ui-private-model-key');
+  await page.locator('#deepseekModel').fill('ui-configured-model');
+  await page.locator('[data-reveal="deepseekApiKey"]').click();
+  assert.equal(await page.locator('#deepseekApiKey').getAttribute('type'), 'text');
+  await page.locator('[data-reveal="deepseekApiKey"]').click();
+  await page.locator('[data-test-service="chat"]').click();
+  await page.locator('[data-test-result="chat"]').filter({ hasText: '通过' }).waitFor();
+  const beforeSave = await page.evaluate(() => fetch('/api/settings').then((r) => r.json()));
+  assert.notEqual(beforeSave.config.deepseek_model, 'ui-configured-model');
+  await page.locator('#btnApiSettingsSave').click();
+  await page.locator('#apiSettingsMessage').filter({ hasText: '立即生效' }).waitFor();
+  assert.equal(await page.locator('#deepseekApiKey').inputValue(), '');
+  const afterSave = await page.evaluate(() => fetch('/api/settings').then((r) => r.json()));
+  assert.equal(afterSave.config.deepseek_model, 'ui-configured-model');
+  assert.equal(afterSave.configured.deepseek_api_key, true);
+  assert.ok(!JSON.stringify(afterSave).includes('ui-private-model-key'));
+  assert.ok(
+    !(await page.evaluate(() => JSON.stringify(localStorage))).includes('ui-private-model-key'),
+  );
+  await page.screenshot({ path: path.join(artifacts, 'desktop-api-settings.png'), fullPage: true });
+  await page.locator('#btnApiSettingsClose').click();
+  await page.locator('#btnApiSettings').click();
+  await page.waitForFunction(() => !document.getElementById('apiSettingsFields').disabled);
+  assert.equal(await page.locator('#deepseekModel').inputValue(), 'ui-configured-model');
+  assert.equal(await page.locator('#deepseekApiKey').inputValue(), '');
+  await page.locator('[data-clear="deepseek_api_key"]').check();
+  await page.locator('#btnApiSettingsSave').click();
+  await page.locator('#apiSettingsMessage').filter({ hasText: '立即生效' }).waitFor();
+  assert.equal(
+    (await page.evaluate(() => fetch('/api/health').then((r) => r.json()))).services.chat,
+    false,
+  );
+  await page.locator('#deepseekApiKey').fill('ui-replacement-key');
+  await page.locator('#btnApiSettingsSave').click();
+  await page.locator('#apiSettingsMessage').filter({ hasText: '立即生效' }).waitFor();
+  await page.locator('#btnApiSettingsClose').click();
+  passed('API panel draft testing, live save, redaction, reload and explicit key removal');
+
+  await phone.locator('#btnMenu').click();
+  await phone.locator('#btnApiSettings').click();
+  await phone.waitForFunction(() => !document.getElementById('apiSettingsFields').disabled);
+  assert.equal(await phone.locator('#btnMenu').getAttribute('aria-expanded'), 'false');
+  assert.equal(
+    await phone.evaluate(
+      () =>
+        document.getElementById('apiSettingsDialog').getBoundingClientRect().width <= innerWidth,
+    ),
+    true,
+  );
+  await phone.screenshot({ path: path.join(artifacts, 'mobile-api-settings.png'), fullPage: true });
+  await phone.locator('#btnApiSettingsClose').click();
+  passed('mobile API configuration dialog');
+
   const degraded = await browser.newContext({ viewport: { width: 1280, height: 900 } });
   const setup = await degraded.newPage();
   setup.on('pageerror', (error) => errors.push(error.message));
