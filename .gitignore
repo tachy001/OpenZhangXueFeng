@@ -8,6 +8,12 @@ build/
 
 # Environment
 .env
+.venv/
+.tmp/
+.pytest_cache/
+.test-data/
+test-results/
+node_modules/
 
 # SSL certs (auto-generated)
 cert.key
