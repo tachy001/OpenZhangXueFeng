@@ -1,6 +1,6 @@
 """Browser-test app with explicit fake providers and disposable conversation data.
 
-Run only for UI checks: python -m uvicorn tests.browser_fixture:app --port 8765
+Run only for UI checks: uv run uvicorn tests.browser_fixture:app --port 8765
 """
 
 import asyncio

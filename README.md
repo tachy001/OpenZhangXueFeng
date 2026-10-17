@@ -13,31 +13,39 @@
 
 ## 启动
 
-需要 Python 3.10+。语音录制需要 Chrome / Edge 等支持麦克风的浏览器。
-
-```bash
-python -m venv .venv
-```
+使用 [uv](https://docs.astral.sh/uv/getting-started/installation/) 管理 Python、虚拟环境和依赖。默认使用 Python 3.12，代码兼容 Python 3.10+。语音录制需要 Chrome / Edge 等支持麦克风的浏览器。
 
 Windows PowerShell：
 
 ```powershell
-.\.venv\Scripts\Activate.ps1
 Copy-Item .env.example .env
-pip install -r requirements.txt
-python server.py
+uv sync --locked
+uv run --locked server.py
 ```
 
 macOS / Linux：
 
 ```bash
-source .venv/bin/activate
 cp .env.example .env
-pip install -r requirements.txt
-python server.py
+uv sync --locked
+uv run --locked server.py
 ```
 
 打开 [本地工作台](http://localhost:8000)。静态前端使用原生 ES Modules，无需安装 Node.js 或执行前端构建。
+
+`uv sync` 自动管理项目内的 `.venv`，无需手动创建或激活环境。运行依赖与开发依赖分别定义在 `pyproject.toml` 中，具体版本统一锁定在 `uv.lock`。已有 `.env` 时无需再次复制示例文件。
+
+### 依赖管理
+
+```bash
+uv add 包名                 # 添加运行依赖
+uv add --dev 包名           # 添加开发依赖
+uv remove 包名             # 删除依赖
+uv lock --upgrade          # 主动升级锁定版本，升级后重新运行测试
+uv lock --check            # 检查项目配置与锁文件是否一致
+```
+
+依赖变更时同时提交 `pyproject.toml` 和 `uv.lock`。部署时使用 `uv sync --locked --no-dev` 安装运行依赖，再使用 `uv run --locked --no-dev server.py` 启动。若外部工具仍需要 requirements 文件，可运行 `uv export --locked --no-dev --no-hashes --no-emit-project -o requirements.txt` 临时导出，不再手工维护第二份依赖清单。
 
 ## 配置
 
@@ -65,12 +73,15 @@ python server.py
 
 ### 手机录音与 HTTPS
 
-浏览器通常只允许在 `localhost` 或 HTTPS 环境使用麦克风。项目目录同时存在 `cert.pem` 和 `cert.key` 时，`python server.py` 会自动启用 HTTPS。证书需要覆盖实际访问的域名或局域网 IP，并由设备信任。
+浏览器通常只允许在 `localhost` 或 HTTPS 环境使用麦克风。项目目录同时存在 `cert.pem` 和 `cert.key` 时，`uv run --locked server.py` 会自动启用 HTTPS。证书需要覆盖实际访问的域名或局域网 IP，并由设备信任。
 
 ## 项目结构
 
 ```text
 server.py                  启动入口，兼容 uvicorn server:app
+pyproject.toml             项目元数据、依赖分组和测试配置
+uv.lock                    跨平台依赖锁文件
+.python-version            默认 Python 版本
 config.py                  类型化配置与能力状态
 app/
   application.py           应用工厂、静态资源与生命周期
@@ -107,8 +118,8 @@ WebSocket 保留 `chat`、`stop`、`new_conv`、`load_conv`、`delete_conv` 命�
 ## 验证
 
 ```bash
-pip install -r requirements-dev.txt
-python -m pytest
+uv sync --locked
+uv run --locked pytest
 ```
 
 测试使用临时数据和替代服务，覆盖生成取消与清理、会话隔离、并发存储、输入验证、工具调用、引用边界和语音句子完整性。真实服务的认证、额度、音色权限和识别质量需要在配置实际密钥后验证。
@@ -127,7 +138,7 @@ npm run format:check
 开发时可使用自动重载：
 
 ```bash
-uvicorn server:app --reload
+uv run --locked uvicorn server:app --reload
 ```
 
 ## 鸣谢

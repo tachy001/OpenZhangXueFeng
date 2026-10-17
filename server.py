@@ -1,4 +1,4 @@
-"""Development entry point: python server.py, or uvicorn server:app."""
+"""Run with uv run server.py, or uv run uvicorn server:app --reload."""
 
 import logging
 from pathlib import Path
